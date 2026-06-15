@@ -12,13 +12,9 @@ cask "alt-tab" do
 
   app "AltTab.app"
 
-  preflight do
-    system_command "pkill", args: ["AltTab"], must_succeed: false
+  postflight do
     system_command "tccutil", args: ["reset", "Accessibility", "com.lwouis.alt-tab-macos"], must_succeed: false
     system_command "tccutil", args: ["reset", "ScreenCapture", "com.lwouis.alt-tab-macos"], must_succeed: false
-  end
-
-  postflight do
     system_command "sudo", args: ["xattr", "-cr", "#{appdir}/AltTab.app"], sudo: true
     system_command "open", args: ["#{appdir}/AltTab.app"]
   end
