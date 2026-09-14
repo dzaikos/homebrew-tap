@@ -1,0 +1,35 @@
+name: Update Alt-Tab Cask
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-cask:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RESPONSE=$(gh api repos/dzaikos/alt-tab-macos/releases/latest)
+
+          TAG=$(echo "$RESPONSE" | jq -r '.tag_name')
+          DIGEST=$(echo "$RESPONSE" | jq -r '.assets[0].digest')
+
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+          echo "VERSION=${TAG#v}" >> "$GITHUB_ENV"
+          echo "SHA256=${DIGEST#sha256:}" >> "$GITHUB_ENV"
+      - run: |
+          sed -i -E 's/(^[[:space:]]*version ")[^"]+(")/\1'"${{ env.VERSION }}"'\2/' Casks/alt-tab.rb
+          sed -i -E 's/(^[[:space:]]*sha256 ")[^"]+(")/\1'"${{ env.SHA256 }}"'\2/' Casks/alt-tab.rb
+      - run: |
+          if ! git diff --quiet; then
+            git config --local user.email "action@github.com"
+            git config --local user.name "GitHub Action"
+            git commit -am "Alt-Tab ${{ env.TAG }}."
+            git push
+          fi
