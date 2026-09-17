@@ -8,15 +8,14 @@ cask "alt-tab" do
   homepage "https://github.com/dzaikos/alt-tab-macos"
 
   auto_updates false
-  depends_on :macos
+  depends_on macos: :monterey
 
   app "AltTab.app"
 
-  postflight do
-    system_command "tccutil", args: ["reset", "Accessibility", "com.lwouis.alt-tab-macos"], must_succeed: false
-    system_command "tccutil", args: ["reset", "ScreenCapture", "com.lwouis.alt-tab-macos"], must_succeed: false
-    system_command "sudo", args: ["xattr", "-cr", "#{appdir}/AltTab.app"], sudo: true
-    system_command "open", args: ["#{appdir}/AltTab.app"]
+  postflight_steps do
+    run "/usr/bin/tccutil", args: ["reset", "Accessibility", "com.lwouis.alt-tab-macos"], must_succeed: false
+    run "/usr/bin/tccutil", args: ["reset", "ScreenCapture", "com.lwouis.alt-tab-macos"], must_succeed: false
+    run "/usr/bin/xattr", args: ["-cr", "{{appdir}}/AltTab.app"], sudo: true
   end
 
   uninstall quit: "com.lwouis.alt-tab-macos"
