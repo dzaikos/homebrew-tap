@@ -13,10 +13,14 @@ cask "alt-tab" do
   app "AltTab.app"
 
   postflight_steps do
-    run "/usr/bin/tccutil", args: ["reset", "Accessibility", "com.lwouis.alt-tab-macos"], must_succeed: false
-    run "/usr/bin/tccutil", args: ["reset", "ScreenCapture", "com.lwouis.alt-tab-macos"], must_succeed: false
-    run "/usr/bin/xattr", args: ["-cr", "{{appdir}}/AltTab.app"], sudo: true
+    run "/usr/bin/xattr", args: ["-cr", "{{appdir}}/AltTab.app"]
   end
+
+  caveats <<~EOS
+    Upgrading alt-tab may result in permission issues. You can reset permissions manually:
+      tccutil reset Accessibility com.lwouis.alt-tab-macos
+      tccutil reset ScreenCapture com.lwouis.alt-tab-macos
+  EOS
 
   uninstall quit: "com.lwouis.alt-tab-macos"
 
